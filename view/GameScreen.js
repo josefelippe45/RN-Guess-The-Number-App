@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, ScrollView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Alert, FlatList, Dimensions } from 'react-native';
 //using icons
 import { Ionicons } from '@expo/vector-icons';
 
@@ -43,6 +43,9 @@ const GameScreen = props => {
     //manages the list os guesses that the computer takes, starting with the first 
     //we use toString here to be able to pass this to our flat list
     const [pastGuesses, setPastGuesses] = useState([initialGuess.toString()]);
+    //using to re-do the layout after orientations changes.
+    const [availableDeviceWidth, setAvailableDeviceWidth] = useState(Dimensions.get('window').width);
+    const [availableDeviceHeight, setAvailableDeviceHeight] = useState(Dimensions.get('window').height);
     //using useRef() to help adjusting the min and max values with the hints the user is giving
     const currentLow = useRef(1);
     const currentHigh = useRef(100);
@@ -50,6 +53,16 @@ const GameScreen = props => {
      * and we store them in const of equal name so we don't need to use 'props.' and we can use it on the
      * second parameter of the useEffect */
     const { userChoice, onGameOver } = props
+    useEffect(() => {
+        const updateLayuot = () => {
+            setAvailableDeviceWidth(Dimensions.get('window').width);
+            setAvailableDeviceHeight(Dimensions.get('window').height);
+        };
+        Dimensions.addEventListener('change', updateLayuot);
+        return (() => {
+            Dimensions.removeEventListener('change', updateLayuot);
+        });
+    });
     /**
      * useEffect allows us to run side effects or logic after every render cycle
      * the function we are passing runs after every render cycle
@@ -95,6 +108,35 @@ const GameScreen = props => {
         //we use toString here to be able to pass this to our flat list
         setPastGuesses(curPastGuesses => [nextNumber.toString(), ...curPastGuesses])
     };
+    let listContainerStyle = styles.listContainer;
+    if (availableDeviceWidth < 350) {
+        listContainerStyle = styles.listContainerBiger;
+    }
+    if (availableDeviceHeight < 500) {
+        return (
+            <View style={styles.screen}>
+                <TitleText>Computer's Guess</TitleText>
+                <View style={styles.controls}>
+                    <MainButton onPress={nextGuessHandler.bind(this, 'lower')} >
+                        <Ionicons name="md-remove" size={24} color="white" />
+                    </MainButton>
+                    <NumberContainer>{currentGuess}</NumberContainer>
+                    <MainButton onPress={nextGuessHandler.bind(this, 'greater')} >
+                        <Ionicons name="md-add" size={24} color="white" />
+                    </MainButton>
+                </View>
+                <View style={styles.listContainer}>
+                    <FlatList
+                        keyExtractor={item => item}
+                        data={pastGuesses}
+
+                        renderItem={renderListItem.bind(this, pastGuesses.length)}
+                        contentContainerStyle={styles.list}
+                    />
+                </View>
+            </View>
+        );
+    }
     //the two .bind() will be used as idetifiers that are passed to the nextGuessHandler
     /**
      * the index inside of the <ScrollView> is the numOfRounds. When we do pastGuess.length - index
@@ -124,9 +166,9 @@ const GameScreen = props => {
                      * bind arguments that should be passed in. this, as the first argument, should refer to the 
                      * function we are calling, pastGuesses.length will be use as our number of rounds
                      */
-                    renderItem={renderListItem.bind(this, pastGuesses.length)} 
+                    renderItem={renderListItem.bind(this, pastGuesses.length)}
                     contentContainerStyle={styles.list}
-                    />
+                />
 
             </View>
 
@@ -143,11 +185,12 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     buttonContainer: {
+
         flexDirection: 'row',
-        width: 300,
-        maxWidth: '80%',
-        justifyContent: 'space-between',
-        marginHorizontal: 15
+        justifyContent: 'space-around',
+        width: 400,
+        maxWidth: '90%'
+
 
     },
     listItem: {
@@ -164,7 +207,7 @@ const styles = StyleSheet.create({
     },
     listContainer: {
         flex: 1, //to the scrollview nested on a view works on android it need to have flex: 1.
-        width: '60%'
+        width: Dimensions.get('window').width > 500 ? '60%' : '80%'
     },
     //styling inside of our scroll view
     list: {
@@ -173,6 +216,16 @@ const styles = StyleSheet.create({
         //allows us to position content along the main axis of the flexbox and it's by default the vertical axis
         justifyContent: 'flex-end' //so it will begin in the bottom of the screen
 
+    },
+    controls: {
+        flexDirection: 'row',
+        width: '80%',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+    },
+    listContainerBiger: {
+        flex: 1,
+        width: '80%'
     }
 });
 
