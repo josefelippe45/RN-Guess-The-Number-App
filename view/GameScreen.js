@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, FlatList, Dimensions } from 'react-native';
 //using icons
 import { Ionicons } from '@expo/vector-icons';
+// reposive with expo
+// import { ScreenOrientation } from 'expo';
 
 import NumberContainer from '../components/NumberContainer';
 import Card from '../components/Card';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, SafeAreaView } from 'react-native';
 import * as Font from 'expo-font';
 //prolongs the splash screen until a simple task of our choice is done
 import { AppLoading } from 'expo';
@@ -64,11 +64,10 @@ export default function App() {
     content = <GameOverScreen roundsNumber={guessRounds} userNumber={userNumber} onRestart={configureNewGameHandler} />
   }
   return (
-    <View style={styles.screen}>
-      <Header title="Guess a Number!" />
-      {content}
-
-    </View>
+    <SafeAreaView style={styles.screen}>
+        <Header title="Guess a Number!" />
+        {content}
+    </SafeAreaView>
   );
 }
 
